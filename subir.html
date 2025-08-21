@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Subir Video a Cloudinary</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#181925; color:#fff; padding:30px;}
+    input, button { margin: 10px 0; }
+    #result { margin-top: 20px;}
+    a { color: #19c37d; }
+  </style>
+</head>
+<body>
+  <h2>Sube tu video a Cloudinary</h2>
+  <input type="file" id="videoInput" accept="video/*" />
+  <br>
+  <button onclick="uploadVideo()">Subir</button>
+  <div id="result"></div>
+
+  <script>
+    async function uploadVideo() {
+      const fileInput = document.getElementById('videoInput');
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = '';
+      if (!fileInput.files.length) {
+        alert('Selecciona un video primero');
+        return;
+      }
+      const file = fileInput.files[0];
+      if (!file.type.startsWith('video/')) {
+        resultDiv.innerHTML = 'Por favor selecciona un archivo de video válido.';
+        return;
+      }
+      const url = 'https://api.cloudinary.com/v1_1/djd5pvdvc/video/upload';
+      const preset = 'video_uploads';
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', preset);
+
+      resultDiv.innerText = 'Subiendo... espera un momento...';
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+        if (data.secure_url) {
+          resultDiv.innerHTML =
+            `¡Video subido! <br><a href="${data.secure_url}" target="_blank">Ver video</a>`;
+        } else {
+          resultDiv.innerHTML = `
+            <b>Error al subir:</b> <pre>${JSON.stringify(data, null, 2)}</pre>
+          `;
+        }
+      } catch (err) {
+        resultDiv.innerText = 'Error: ' + err.message;
+      }
+    }
+  </script>
+</body>
+</html>
